@@ -25,6 +25,8 @@ class Window(pyglet.window.Window):
         self.rx = 0.
         self.ry = 0.
         self.rz = 0.
+        self.x = 0.
+        self.y = 0.
         self.z = -10
         self.ALT = False
         self.batch = pyglet.graphics.Batch()
@@ -167,7 +169,7 @@ class Window(pyglet.window.Window):
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
         glLoadIdentity()
-        glTranslatef(0, 0, self.z)
+        glTranslatef(self.x, self.y, self.z)
         glRotatef(self.rx, 1, 0, 0)
         glRotatef(self.ry, 0, 1, 0)
         glRotatef(self.rz, 0, 0, 1)
