@@ -31,6 +31,8 @@ class Window(pyglet.window.Window):
         self.ALT = False
         self.batch = pyglet.graphics.Batch()
         # pyglet.clock.schedule(self.update)
+        self.selection_start_x = -1
+        self.selection_start_y = -1
 
         glEnable(GL_DEPTH_TEST)
         # glDisable(GL_DEPTH_TEST)
@@ -206,12 +208,22 @@ class Window(pyglet.window.Window):
         glPushMatrix();
         glLoadIdentity();
         self.label.draw()
+        if self.ALT and self.selection_start_x != -1 and self.selection_start_y != -1:
+            pyglet.graphics.draw(8, GL_LINES, ('v2f', [self.selection_start_x, self.selection_start_y, \
+                                                        self.selection_start_x, self.selection_end_y, \
+                                                        self.selection_start_x, self.selection_end_y, \
+                                                        self.selection_end_x, self.selection_end_y, \
+                                                        self.selection_end_x, self.selection_end_y, \
+                                                        self.selection_end_x, self.selection_start_y, \
+                                                        self.selection_end_x, self.selection_start_y, \
+                                                        self.selection_start_x, self.selection_start_y]))
         glMatrixMode(GL_MODELVIEW);
         glPopMatrix();
         glMatrixMode(GL_PROJECTION);
         glPopMatrix();
         glMatrixMode(GL_PROJECTION)
         glMatrixMode(GL_MODELVIEW)
+
 
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -226,34 +238,50 @@ class Window(pyglet.window.Window):
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         self.mouse_pos = (x, y)
         key = pyglet.window.key
-        if button == pyglet.window.mouse.LEFT and (modifiers & key.MOD_CTRL):
-            x -= window.width // 2
-            y -= window.height // 2
-            lx = x - dx
-            ly = y - dy
-            angle = np.angle((x + y * 1J) / ((lx + ly * 1J))) * 50
-            self.rz += angle
-            return
-        if button == pyglet.window.mouse.MIDDLE:
-            self.x += dx / 10.0
-            self.y += dy / 10.0
-            return
-        if button == pyglet.window.mouse.LEFT:
-            self.ry += dx / 5.0
-            self.rx -= dy / 5.0
-            return
+        if button == pyglet.window.mouse.LEFT and (modifiers & key.MOD_ALT):
+            if self.selection_start_x == -1 and self.selection_start_y == -1:
+                self.selection_start_x = x
+                self.selection_start_y = y
+            self.selection_end_x = x
+            self.selection_end_y = y
+        if not self.ALT:
+            if button == pyglet.window.mouse.LEFT and (modifiers & key.MOD_CTRL):
+                x -= window.width // 2
+                y -= window.height // 2
+                lx = x - dx
+                ly = y - dy
+                angle = np.angle((x + y * 1J) / ((lx + ly * 1J))) * 50
+                self.rz += angle
+                return
+            if button == pyglet.window.mouse.MIDDLE:
+                self.x += dx / 10.0
+                self.y += dy / 10.0
+                return
+            if button == pyglet.window.mouse.LEFT:
+                self.ry += dx / 5.0
+                self.rx -= dy / 5.0
+                return
     def on_key_press(self, symbol, modifiers):
         key = pyglet.window.key
-        # if  button == pyglet.window.mouse.LEFT and (modifiers & key.MOD_ALT):
         if  symbol == key.ESCAPE:
             exit()
             # return pyglet.event.EVENT_HANDLED
+        # if  button == pyglet.window.mouse.LEFT and (modifiers & key.MOD_ALT):
         if  symbol == key.LALT or symbol == key.RALT:
             self.ALT = True
+            self.selection_start_x = -1
+            self.selection_start_y = -1
+            self.selection_end_x = -1
+            self.selection_end_y = -1
             return
     def on_key_release(self, symbol, modifiers):
         key = pyglet.window.key
         # if  button == pyglet.window.mouse.LEFT and (modifiers & key.MOD_ALT):
+        if self.ALT:
+            self.selection_start_x = -1
+            self.selection_start_y = -1
+            self.selection_end_x = -1
+            self.selection_end_y = -1
         if  symbol == key.LALT or symbol == key.RALT:
             self.ALT = False
             return
